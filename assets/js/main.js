@@ -55,6 +55,11 @@ if (typeof gsap !== "undefined" && typeof ScrollTrigger !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
 
+let appLenis;
+let splitCardsMM;
+let splitCardsResizeTimer;
+let splitCardsResizeBound = false;
+
 function setActiveNav() {
   const page = document.body.dataset.page;
   if (!page) return;
@@ -122,13 +127,16 @@ function applyRandomImages() {
 
 function initLenis() {
   if (typeof Lenis === "undefined") return;
-  const lenis = new Lenis();
+  if (appLenis && typeof appLenis.destroy === "function") {
+    appLenis.destroy();
+  }
+  appLenis = new Lenis();
   if (typeof ScrollTrigger !== "undefined") {
-    lenis.on("scroll", ScrollTrigger.update);
+    appLenis.on("scroll", ScrollTrigger.update);
   }
   if (typeof gsap !== "undefined") {
     gsap.ticker.add((time) => {
-      lenis.raf(time * 1000);
+      if (appLenis) appLenis.raf(time * 1000);
     });
     gsap.ticker.lagSmoothing(0);
   }
@@ -243,19 +251,6 @@ function runPageAnimations() {
     });
   }
 
-  if (document.querySelector(".process-cards")) {
-    gsap.from(".process-cards .card-glass", {
-      y: 50,
-      opacity: 0,
-      stagger: 0.15,
-      duration: 0.65,
-      scrollTrigger: {
-        trigger: ".process-cards",
-        start: "top 75%"
-      }
-    });
-  }
-
   if (document.querySelector(".reveal-up")) {
     gsap.from(".reveal-up", {
       y: 45,
@@ -269,6 +264,150 @@ function runPageAnimations() {
       }
     });
   }
+}
+
+function initSplitCards() {
+  const splitWrap = document.querySelector(".sc-wrap");
+  if (!splitWrap || typeof gsap === "undefined" || typeof ScrollTrigger === "undefined") return;
+
+  const sticky = splitWrap.querySelector(".sc-sticky");
+  const cardContainer = splitWrap.querySelector(".sc-card-container");
+  const stickyHeader = splitWrap.querySelector(".sc-header h2");
+  if (!sticky || !cardContainer || !stickyHeader) return;
+
+  if (splitCardsMM) {
+    splitCardsMM.revert();
+    splitCardsMM = null;
+  }
+
+  ScrollTrigger.getAll()
+    .filter((trigger) => trigger.vars && trigger.vars.id === "split-cards-pin")
+    .forEach((trigger) => trigger.kill());
+
+  let isGapAnimationCompleted = false;
+  let isFlipAnimationCompleted = false;
+
+  splitCardsMM = gsap.matchMedia();
+
+  splitCardsMM.add("(max-width: 999px)", () => {
+    splitWrap.querySelectorAll(".sc-card, .sc-card-container, .sc-header h2").forEach((el) => {
+      el.style.cssText = "";
+    });
+    return () => {};
+  });
+
+  splitCardsMM.add("(min-width: 1000px)", () => {
+    ScrollTrigger.create({
+      id: "split-cards-pin",
+      trigger: sticky,
+      start: "top top",
+      end: `+=${window.innerHeight * 4}px`,
+      scrub: 1,
+      pin: true,
+      pinSpacing: true,
+      onUpdate: (self) => {
+        const progress = self.progress;
+
+        if (progress >= 0.1 && progress <= 0.25) {
+          const headerProgress = gsap.utils.mapRange(0.1, 0.25, 0, 1, progress);
+          const yValue = gsap.utils.mapRange(0, 1, 40, 0, headerProgress);
+          const opacityValue = gsap.utils.mapRange(0, 1, 0, 1, headerProgress);
+          gsap.set(stickyHeader, { y: yValue, opacity: opacityValue });
+        } else if (progress < 0.1) {
+          gsap.set(stickyHeader, { y: 40, opacity: 0 });
+        } else if (progress > 0.25) {
+          gsap.set(stickyHeader, { y: 0, opacity: 1 });
+        }
+
+        if (progress <= 0.25) {
+          const widthPercentage = gsap.utils.mapRange(0, 0.25, 75, 60, progress);
+          gsap.set(cardContainer, { width: `${widthPercentage}%` });
+        } else {
+          gsap.set(cardContainer, { width: "60%" });
+        }
+
+        if (progress >= 0.35 && !isGapAnimationCompleted) {
+          gsap.to(cardContainer, {
+            gap: "20px",
+            duration: 0.5,
+            ease: "power3.out"
+          });
+          gsap.to(["#sc-card-1", "#sc-card-2", "#sc-card-3"], {
+            borderRadius: "20px",
+            duration: 0.5,
+            ease: "power3.out"
+          });
+          isGapAnimationCompleted = true;
+        } else if (progress < 0.35 && isGapAnimationCompleted) {
+          gsap.to(cardContainer, {
+            gap: "0px",
+            duration: 0.5,
+            ease: "power3.out"
+          });
+          gsap.to("#sc-card-1", {
+            borderRadius: "20px 0 0 20px",
+            duration: 0.5,
+            ease: "power3.out"
+          });
+          gsap.to("#sc-card-2", {
+            borderRadius: "0px",
+            duration: 0.5,
+            ease: "power3.out"
+          });
+          gsap.to("#sc-card-3", {
+            borderRadius: "0 20px 20px 0",
+            duration: 0.5,
+            ease: "power3.out"
+          });
+          isGapAnimationCompleted = false;
+        }
+
+        if (progress >= 0.7 && !isFlipAnimationCompleted) {
+          gsap.to(".sc-card", {
+            rotationY: 180,
+            duration: 0.75,
+            ease: "power3.inOut",
+            stagger: 0.1
+          });
+          gsap.to(["#sc-card-1", "#sc-card-3"], {
+            y: 30,
+            rotationZ: (i) => [-15, 15][i],
+            duration: 0.75,
+            ease: "power3.inOut"
+          });
+          isFlipAnimationCompleted = true;
+        } else if (progress < 0.7 && isFlipAnimationCompleted) {
+          gsap.to(".sc-card", {
+            rotationY: 0,
+            duration: 0.75,
+            ease: "power3.inOut",
+            stagger: -0.1
+          });
+          gsap.to(["#sc-card-1", "#sc-card-3"], {
+            y: 0,
+            rotationZ: 0,
+            duration: 0.75,
+            ease: "power3.inOut"
+          });
+          isFlipAnimationCompleted = false;
+        }
+      }
+    });
+
+    return () => {};
+  });
+
+  if (!splitCardsResizeBound) {
+    window.addEventListener("resize", () => {
+      clearTimeout(splitCardsResizeTimer);
+      splitCardsResizeTimer = setTimeout(() => {
+        initSplitCards();
+      }, 250);
+    });
+    splitCardsResizeBound = true;
+  }
+
+  ScrollTrigger.refresh();
 }
 
 function initCaseMasks() {
@@ -356,6 +495,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   await loadPartials();
   applyRandomImages();
   initLenis();
+  initSplitCards();
   initCaseMasks();
   initHeroVideo();
   runPreloader();
