@@ -452,14 +452,25 @@ function initHeroVideo() {
   const heroSection = document.querySelector(".hero-section");
   const video = document.querySelector(".hero-video");
   if (!heroSection || !video) return;
-  const randomVideos = [
-    "https://videos.pexels.com/video-files/3255275/3255275-sd_960_506_25fps.mp4",
-    "https://videos.pexels.com/video-files/3195394/3195394-sd_960_506_25fps.mp4",
-    "https://videos.pexels.com/video-files/3129957/3129957-sd_960_506_24fps.mp4"
-  ];
-  const selectedVideo = randomVideos[Math.floor(Math.random() * randomVideos.length)];
-  video.src = selectedVideo;
-  video.load();
+
+  const sourceEl = video.querySelector("source");
+  const inlineSource = sourceEl ? sourceEl.getAttribute("src") : "";
+  const inlineVideoSrc = video.getAttribute("src") || "";
+  const hasInlineSource = Boolean((inlineSource || inlineVideoSrc).trim());
+  const useRandomVideo = video.hasAttribute("data-random-hero-video");
+
+  if (useRandomVideo || !hasInlineSource) {
+    const randomVideos = [
+      "https://videos.pexels.com/video-files/3255275/3255275-sd_960_506_25fps.mp4",
+      "https://videos.pexels.com/video-files/3195394/3195394-sd_960_506_25fps.mp4",
+      "https://videos.pexels.com/video-files/3129957/3129957-sd_960_506_24fps.mp4"
+    ];
+    const selectedVideo = randomVideos[Math.floor(Math.random() * randomVideos.length)];
+    video.src = selectedVideo;
+    video.load();
+  } else {
+    video.load();
+  }
 
   const onVideoFail = () => {
     heroSection.classList.add("video-fallback");
