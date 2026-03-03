@@ -21,18 +21,57 @@ async function loadPartials() {
   } catch (error) {
     console.error("Header/footer dynamic load failed.", error);
     headerTarget.innerHTML = `
-      <header class="site-header fixed-top">
-        <nav class="navbar navbar-expand-lg">
-          <div class="container">
-            <a class="navbar-brand brand-mark" href="index.html">REFLECTIONS</a>
-            <div class="navbar-nav ms-auto flex-row gap-3">
-              <a class="nav-link" data-page-link="home" href="index.html">Home</a>
-              <a class="nav-link" data-page-link="about" href="about.html">About</a>
-              <a class="nav-link" data-page-link="case-studies" href="case-studies.html">Case Studies</a>
-              <a class="nav-link" data-page-link="contact" href="contact.html">Contact</a>
+      <header class="site-header akaru-header">
+        <div class="akaru-logo">
+          <a href="index.html">Reflections</a>
+        </div>
+        <button class="menu-toggle closed" type="button" aria-label="Toggle menu" aria-expanded="false">
+          <div class="menu-toggle-icon">
+            <div class="hamburger">
+              <div class="menu-bar" data-position="top"></div>
+              <div class="menu-bar" data-position="bottom"></div>
             </div>
           </div>
-        </nav>
+          <div class="menu-copy"><p>Menu</p></div>
+        </button>
+        <div class="menu" aria-hidden="true">
+          <div class="col col-1">
+            <div class="menu-logo"><a href="index.html">Reflections</a></div>
+            <div class="links">
+              <div class="link"><a data-page-link="home" href="index.html">Home</a></div>
+              <div class="link"><a data-page-link="about" href="about.html">About</a></div>
+              <div class="link"><a data-page-link="case-studies" href="case-studies.html">Case Studies</a></div>
+              <div class="link"><a data-page-link="contact" href="contact.html">Contact</a></div>
+            </div>
+            <div class="video-wrapper">
+              <video autoplay muted loop playsinline>
+                <source src="cg-akaru-menu-js/assets/video.mp4" type="video/mp4">
+              </video>
+            </div>
+          </div>
+          <div class="col col-2">
+            <div class="socials">
+              <div class="sub-col">
+                <p>Reflections</p>
+                <p>Creative District</p>
+                <p>New York, USA</p>
+                <p>Remote-first</p>
+                <br>
+                <p>hello@reflections.agency</p>
+                <p>jobs@reflections.agency</p>
+              </div>
+              <div class="sub-col">
+                <p>Instagram</p>
+                <p>LinkedIn</p>
+                <p>X / Twitter</p>
+                <p>Dribbble</p>
+                <br>
+                <p>+1 555 123 4578</p>
+              </div>
+            </div>
+            <div class="header"><h1>Reflections</h1></div>
+          </div>
+        </div>
       </header>
     `;
     footerTarget.innerHTML = `
@@ -104,6 +143,157 @@ function setFooterYear() {
   if (yearNode) {
     yearNode.textContent = String(new Date().getFullYear());
   }
+}
+
+function initAkaruMenu() {
+  const header = document.querySelector(".akaru-header");
+  if (!header || typeof gsap === "undefined") return;
+
+  const menuToggle = header.querySelector(".menu-toggle");
+  const menu = header.querySelector(".menu");
+  const links = header.querySelectorAll(".link");
+  const socialLinks = header.querySelectorAll(".socials p");
+  const title = header.querySelector(".header h1");
+  const menuVideo = header.querySelector(".video-wrapper");
+
+  if (!menuToggle || !menu || !title) return;
+  if (menuToggle.dataset.menuBound === "1") return;
+  menuToggle.dataset.menuBound = "1";
+
+  if (typeof CustomEase !== "undefined") {
+    gsap.registerPlugin(CustomEase);
+    CustomEase.create(
+      "hop",
+      "M0,0 C0.354,0 0.464,0.133 0.498,0.502 0.532,0.872 0.651,1 1,1"
+    );
+  }
+
+  if (!title.dataset.split) {
+    const split = title.innerText
+      .split("")
+      .map((char) => `<span>${char === " " ? "&nbsp;&nbsp;" : char}</span>`)
+      .join("");
+    title.innerHTML = split;
+    title.dataset.split = "1";
+  }
+
+  let isAnimating = false;
+  const textSpans = header.querySelectorAll(".header h1 span");
+  const hopEase = typeof CustomEase !== "undefined" ? "hop" : "power3.inOut";
+
+  const closeMenu = () => {
+    menuToggle.classList.remove("opened");
+    menuToggle.classList.add("closed");
+    menuToggle.setAttribute("aria-expanded", "false");
+    menu.setAttribute("aria-hidden", "true");
+  };
+
+  const openMenu = () => {
+    menuToggle.classList.remove("closed");
+    menuToggle.classList.add("opened");
+    menuToggle.setAttribute("aria-expanded", "true");
+    menu.setAttribute("aria-hidden", "false");
+  };
+
+  menuToggle.addEventListener("click", () => {
+    if (isAnimating) return;
+    isAnimating = true;
+
+    if (menuToggle.classList.contains("closed")) {
+      openMenu();
+
+      gsap.to(menu, {
+        clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
+        ease: hopEase,
+        duration: 1.5,
+        onStart: () => {
+          menu.style.pointerEvents = "all";
+        },
+        onComplete: () => {
+          isAnimating = false;
+        }
+      });
+
+      gsap.to(links, {
+        y: 0,
+        opacity: 1,
+        stagger: 0.1,
+        delay: 0.85,
+        duration: 1,
+        ease: "power3.out"
+      });
+
+      gsap.to(socialLinks, {
+        y: 0,
+        opacity: 1,
+        stagger: 0.05,
+        delay: 0.85,
+        duration: 1,
+        ease: "power3.out"
+      });
+
+      if (menuVideo) {
+        gsap.to(menuVideo, {
+          clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
+          ease: hopEase,
+          duration: 1.5,
+          delay: 0.5
+        });
+      }
+
+      gsap.to(textSpans, {
+        rotateY: 0,
+        stagger: 0.05,
+        delay: 0.75,
+        duration: 1.5,
+        ease: "power4.out"
+      });
+
+      gsap.to(textSpans, {
+        y: 0,
+        scale: 1,
+        stagger: 0.05,
+        delay: 0.5,
+        duration: 1.5,
+        ease: "power4.out"
+      });
+    } else {
+      closeMenu();
+
+      gsap.to(menu, {
+        clipPath: "polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)",
+        ease: hopEase,
+        duration: 1.5,
+        onComplete: () => {
+          menu.style.pointerEvents = "none";
+          gsap.set(menu, {
+            clipPath: "polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)"
+          });
+          gsap.set(links, { y: 30, opacity: 0 });
+          gsap.set(socialLinks, { y: 30, opacity: 0 });
+          if (menuVideo) {
+            gsap.set(menuVideo, {
+              clipPath: "polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)"
+            });
+          }
+          gsap.set(textSpans, {
+            y: 500,
+            rotateY: 90,
+            scale: 0.75
+          });
+          isAnimating = false;
+        }
+      });
+    }
+  });
+
+  header.querySelectorAll(".menu .link a").forEach((link) => {
+    link.addEventListener("click", () => {
+      if (menuToggle.classList.contains("opened")) {
+        closeMenu();
+      }
+    });
+  });
 }
 
 function getCgImages() {
@@ -683,6 +873,7 @@ function initTestimonialDrag() {
 
   const onPointerDown = (e) => {
     isDown = true;
+    track.style.scrollSnapType = "none";
     track.classList.add("is-dragging");
     startX = e.pageX || (e.touches && e.touches[0] ? e.touches[0].pageX : 0);
     scrollStart = track.scrollLeft;
@@ -692,13 +883,16 @@ function initTestimonialDrag() {
     if (!isDown) return;
     const x = e.pageX || (e.touches && e.touches[0] ? e.touches[0].pageX : 0);
     const delta = x - startX;
-    track.scrollLeft = scrollStart - delta * 1.35;
+    track.scrollLeft = scrollStart - delta * 0.95;
     loopScroll();
   };
 
   const onPointerUp = () => {
     isDown = false;
     track.classList.remove("is-dragging");
+    requestAnimationFrame(() => {
+      track.style.scrollSnapType = "x proximity";
+    });
   };
 
   track.addEventListener("mousedown", onPointerDown);
@@ -732,6 +926,7 @@ function initTestimonialDrag() {
 
 document.addEventListener("DOMContentLoaded", async () => {
   await loadPartials();
+  initAkaruMenu();
   applyRandomImages();
   initLenis();
   initSplitCards();
@@ -741,3 +936,4 @@ document.addEventListener("DOMContentLoaded", async () => {
   initHeroVideo();
   runPreloader();
 });
+
