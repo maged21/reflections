@@ -938,54 +938,73 @@ function initTestimonialDrag() {
   }
 }
 
-function initAboutDotsField() {
-  const section = document.querySelector(".about-reference");
-  const dotsField = section ? section.querySelector(".about-dots-bg") : null;
-  if (!section || !dotsField) return;
+function initInteractiveDotFields() {
+  const fields = Array.from(document.querySelectorAll(".dot-field-area"));
+  if (!fields.length) return;
 
-  if (window.matchMedia("(pointer: coarse)").matches) return;
-
+  const isCoarsePointer = window.matchMedia("(pointer: coarse)").matches;
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  let rect = section.getBoundingClientRect();
 
-  const moveField = (x, y, immediate = false) => {
-    const clampedX = Math.max(0, Math.min(x, rect.width));
-    const clampedY = Math.max(0, Math.min(y, rect.height));
+  fields.forEach((section) => {
+    if (section.dataset.dotFieldBound === "1") return;
+    section.dataset.dotFieldBound = "1";
 
-    if (reduceMotion || typeof gsap === "undefined" || immediate) {
-      dotsField.style.setProperty("--mx", `${clampedX}px`);
-      dotsField.style.setProperty("--my", `${clampedY}px`);
-      return;
+    let dotsField = section.querySelector(".mouse-dots-bg");
+    if (!dotsField) {
+      dotsField = document.createElement("div");
+      dotsField.className = "mouse-dots-bg";
+      dotsField.setAttribute("aria-hidden", "true");
+      dotsField.innerHTML = `
+        <div class="mouse-dots-layer mouse-dots-layer--base"></div>
+        <div class="mouse-dots-layer mouse-dots-layer--mid"></div>
+        <div class="mouse-dots-layer mouse-dots-layer--near"></div>
+      `;
+      section.prepend(dotsField);
     }
 
-    gsap.to(dotsField, {
-      "--mx": `${clampedX}px`,
-      "--my": `${clampedY}px`,
-      duration: 0.42,
-      ease: "power3.out",
-      overwrite: true
-    });
-  };
+    let rect = section.getBoundingClientRect();
+    const moveField = (x, y, immediate = false) => {
+      const clampedX = Math.max(0, Math.min(x, rect.width));
+      const clampedY = Math.max(0, Math.min(y, rect.height));
 
-  section.addEventListener("pointerenter", (event) => {
-    rect = section.getBoundingClientRect();
-    dotsField.classList.add("is-hovering");
-    moveField(event.clientX - rect.left, event.clientY - rect.top, true);
-  });
+      if (reduceMotion || typeof gsap === "undefined" || immediate) {
+        dotsField.style.setProperty("--mx", `${clampedX}px`);
+        dotsField.style.setProperty("--my", `${clampedY}px`);
+        return;
+      }
 
-  section.addEventListener("pointermove", (event) => {
-    rect = section.getBoundingClientRect();
-    moveField(event.clientX - rect.left, event.clientY - rect.top);
-  });
+      gsap.to(dotsField, {
+        "--mx": `${clampedX}px`,
+        "--my": `${clampedY}px`,
+        duration: 0.3,
+        ease: "power2.out",
+        overwrite: true
+      });
+    };
 
-  section.addEventListener("pointerleave", () => {
-    dotsField.classList.remove("is-hovering");
-    moveField(rect.width / 2, rect.height / 2);
-  });
-
-  window.addEventListener("resize", () => {
-    rect = section.getBoundingClientRect();
     moveField(rect.width / 2, rect.height / 2, true);
+    if (isCoarsePointer) return;
+
+    section.addEventListener("pointerenter", (event) => {
+      rect = section.getBoundingClientRect();
+      dotsField.classList.add("is-hovering");
+      moveField(event.clientX - rect.left, event.clientY - rect.top, true);
+    });
+
+    section.addEventListener("pointermove", (event) => {
+      rect = section.getBoundingClientRect();
+      moveField(event.clientX - rect.left, event.clientY - rect.top);
+    });
+
+    section.addEventListener("pointerleave", () => {
+      dotsField.classList.remove("is-hovering");
+      moveField(rect.width / 2, rect.height / 2);
+    });
+
+    window.addEventListener("resize", () => {
+      rect = section.getBoundingClientRect();
+      moveField(rect.width / 2, rect.height / 2, true);
+    });
   });
 }
 
@@ -1077,7 +1096,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   initBrandAppartCards();
   initCaseMasks();
   initTestimonialDrag();
-  initAboutDotsField();
+  initInteractiveDotFields();
   initContactFaqAccordion();
   initHeroVideo();
   runPreloader();

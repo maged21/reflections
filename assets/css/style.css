@@ -1,5 +1,5 @@
 :root {
-  --bg: #000;
+  --bg: #050505;
   --text: #fff;
   --accent: #74d491;
   --muted: #a7a7a7;
@@ -412,15 +412,21 @@ a {
   background: #000;
   color: #eeece7;
   position: relative;
+}
+
+.dot-field-area,
+.footer-neo {
+  position: relative;
   overflow: hidden;
 }
 
-.about-reference .container-fluid {
+.dot-field-area > :not(.mouse-dots-bg),
+.footer-neo > :not(.mouse-dots-bg) {
   position: relative;
   z-index: 2;
 }
 
-.about-dots-bg {
+.mouse-dots-bg {
   position: absolute;
   inset: 0;
   z-index: 1;
@@ -429,26 +435,41 @@ a {
   --my: 50%;
 }
 
-.about-dots-layer {
+.mouse-dots-layer {
   position: absolute;
   inset: 0;
   background-size: 18px 18px;
 }
 
-.about-dots-layer--base {
-  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.12) 1px, transparent 1.1px);
+.mouse-dots-layer--base {
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.11) 0.9px, transparent 1px);
 }
 
-.about-dots-layer--active {
-  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.24) 2.2px, transparent 2.3px);
-  opacity: 0.32;
-  -webkit-mask-image: radial-gradient(220px 220px at var(--mx) var(--my), rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.92) 32%, transparent 78%);
-  mask-image: radial-gradient(220px 220px at var(--mx) var(--my), rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.92) 32%, transparent 78%);
-  transition: opacity 0.35s ease;
+.mouse-dots-layer--mid {
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.2) 1.85px, transparent 1.95px);
+  opacity: 0.16;
+  -webkit-mask-image: radial-gradient(220px 220px at var(--mx) var(--my), rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.86) 40%, transparent 82%);
+  mask-image: radial-gradient(220px 220px at var(--mx) var(--my), rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.86) 40%, transparent 82%);
 }
 
-.about-dots-bg.is-hovering .about-dots-layer--active {
-  opacity: 0.9;
+.mouse-dots-layer--near {
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.28) 2.55px, transparent 2.65px);
+  opacity: 0.08;
+  -webkit-mask-image: radial-gradient(118px 118px at var(--mx) var(--my), rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.8) 44%, transparent 86%);
+  mask-image: radial-gradient(118px 118px at var(--mx) var(--my), rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.8) 44%, transparent 86%);
+}
+
+.mouse-dots-layer--mid,
+.mouse-dots-layer--near {
+  transition: opacity 0.36s ease;
+}
+
+.mouse-dots-bg.is-hovering .mouse-dots-layer--mid {
+  opacity: 0.62;
+}
+
+.mouse-dots-bg.is-hovering .mouse-dots-layer--near {
+  opacity: 0.52;
 }
 
 .about-exact-grid {
@@ -807,7 +828,7 @@ a {
 
 .ba-intro-wrap .section-intro-kicker,
 .ba-intro-wrap .section-intro-title {
-  color: #0d0d0d;
+   color: #e7e7e7;
 }
 
 .ba-intro-wrap .section-intro-title {
@@ -1243,7 +1264,7 @@ a {
 
 .sub-hero {
   position: relative;
-  padding: 160px 0 80px;
+  padding: 260px 0 80px;
   background-image: var(--sub-hero-image, url("../img/cg/img9.jpg"));
   background-size: cover;
   background-position: center;
