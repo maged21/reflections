@@ -19,29 +19,107 @@
 
   <div id="site-header"></div>
   <main>
-    <section class="sub-hero" data-random-breadcrumb="contact">
+        <section class="sub-hero" data-random-breadcrumb="contact">
       <div class="container">
         <p class="text-accent mb-2">Home / Contact</p>
         <h1>Let's Build Something Bold</h1>
       </div>
-    </section>
-    <section class="section-space">
-      <div class="container">
-        <div class="row g-5">
-          <div class="col-lg-5">
-            <h3>Contact Info</h3>
-            <p>Email: hello@reflections.agency</p>
-            <p>Phone: +1 555 123 4578</p>
-            <p>Address: 121 Creative Ave, New York, NY</p>
+        </section>
+    <section class="contact-showcase section-space">
+      <div class="container-fluid px-lg-5">
+        <div class="contact-grid">
+          <div class="contact-copy">
+            <p class="contact-kicker">CONTACT US</p>
+            <h1 class="contact-title">CONTACT</h1>
+            <p class="contact-lead">Our mission is to empower designers, developers and agencies with the tools they need to build digital products more efficiently.</p>
+            <a href="about.html" class="contact-outline-btn">ABOUT US</a>
+
+            <div class="contact-meta">
+              <div class="contact-meta-item">
+                <span>EMAIL</span>
+                <a href="mailto:info@reflections.agency">INFO@REFLECTIONS.AGENCY</a>
+              </div>
+              <div class="contact-meta-item">
+                <span>TEL</span>
+                <a href="tel:+14155550198">+1 415 555 0198</a>
+              </div>
+            </div>
           </div>
-          <div class="col-lg-7">
-            <form class="contact-form">
-              <div class="mb-3"><input class="form-control" type="text" placeholder="Name"></div>
-              <div class="mb-3"><input class="form-control" type="email" placeholder="Email"></div>
-              <div class="mb-3"><input class="form-control" type="text" placeholder="Subject"></div>
-              <div class="mb-3"><textarea class="form-control" rows="5" placeholder="Message"></textarea></div>
-              <button type="submit" class="btn btn-accent">Send Message</button>
+
+          <div class="contact-form-frame">
+            <form class="contact-dark-form">
+              <label for="contact-name">NAME</label>
+              <input id="contact-name" type="text" placeholder="Jane Smith">
+
+              <label for="contact-email">EMAIL</label>
+              <input id="contact-email" type="email" placeholder="jane@nivora.com">
+
+              <label for="contact-phone">PHONE NUMBER</label>
+              <input id="contact-phone" type="tel" placeholder="+1 415 555 0198">
+
+              <label for="contact-location">LOCATION</label>
+              <select id="contact-location">
+                <option value="" selected disabled>Select...</option>
+                <option value="north-america">North America</option>
+                <option value="europe">Europe</option>
+                <option value="middle-east">Middle East</option>
+                <option value="asia">Asia</option>
+              </select>
+
+              <label for="contact-industry">INDUSTRY</label>
+              <select id="contact-industry">
+                <option value="" selected disabled>Select...</option>
+                <option value="technology">Technology</option>
+                <option value="ecommerce">E-Commerce</option>
+                <option value="healthcare">Healthcare</option>
+                <option value="finance">Finance</option>
+                <option value="real-estate">Real Estate</option>
+                <option value="education">Education</option>
+              </select>
+
+              <label for="contact-message">MESSAGE</label>
+              <textarea id="contact-message" rows="4" placeholder="Tell us about your project..."></textarea>
+
+              <button type="submit">SUBMIT</button>
             </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="contact-faq section-space">
+      <div class="container-fluid px-lg-5">
+        <div class="contact-grid">
+          <div class="faq-copy">
+            <h2>FREQUENTLY ASKED QUESTIONS</h2>
+            <p>THIS IS DIFFERENT WE GET IT, YOU MAY HAVE QUESTIONS, HERE ARE SOME ANSWERS.</p>
+          </div>
+
+          <div class="faq-list">
+            <details class="faq-item">
+              <summary>WHAT SERVICES OFFERED?</summary>
+              <div class="faq-answer">
+                <p>Brand strategy, visual identity, website design, product UX/UI, and campaign creative support.</p>
+              </div>
+            </details>
+            <details class="faq-item">
+              <summary>WHO IS THIS FOR?</summary>
+              <div class="faq-answer">
+                <p>Founders, in-house teams, and agencies that need a fast, high-quality design partner.</p>
+              </div>
+            </details>
+            <details class="faq-item">
+              <summary>HOW PROJECTS START?</summary>
+              <div class="faq-answer">
+                <p>We begin with a short discovery call, then define scope, timeline, milestones, and delivery plan.</p>
+              </div>
+            </details>
+            <details class="faq-item">
+              <summary>HOW LONG DELIVERY?</summary>
+              <div class="faq-answer">
+                <p>Typical engagements range from 2 to 8 weeks depending on complexity and review cycles.</p>
+              </div>
+            </details>
           </div>
         </div>
       </div>

@@ -444,6 +444,9 @@ function runPreloader() {
     onComplete: () => {
       preloader.querySelectorAll(".triangle").forEach((el) => el.remove());
       preloader.style.display = "none";
+      if (typeof ScrollTrigger !== "undefined") {
+        requestAnimationFrame(() => ScrollTrigger.refresh());
+      }
     }
   });
 }
@@ -935,6 +938,85 @@ function initTestimonialDrag() {
   }
 }
 
+function initContactFaqAccordion() {
+  const items = Array.from(document.querySelectorAll(".faq-item"));
+  if (!items.length) return;
+
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const setAnswerHeight = (item, expanded) => {
+    const answer = item.querySelector(".faq-answer");
+    if (!answer) return;
+
+    if (expanded) {
+      answer.style.height = `${answer.scrollHeight}px`;
+    } else {
+      answer.style.height = "0px";
+    }
+  };
+
+  items.forEach((item) => {
+    const summary = item.querySelector("summary");
+    const answer = item.querySelector(".faq-answer");
+    if (!summary || !answer) return;
+
+    setAnswerHeight(item, item.hasAttribute("open"));
+
+    summary.addEventListener("click", (event) => {
+      event.preventDefault();
+      if (item.dataset.animating === "1") return;
+
+      const isOpen = item.hasAttribute("open");
+
+      if (reduceMotion) {
+        if (isOpen) {
+          item.removeAttribute("open");
+        } else {
+          item.setAttribute("open", "");
+        }
+        setAnswerHeight(item, !isOpen);
+        return;
+      }
+
+      item.dataset.animating = "1";
+
+      const onDone = (removeOpenAtEnd = false) => {
+        const handleEnd = (e) => {
+          if (e.propertyName !== "height") return;
+          answer.removeEventListener("transitionend", handleEnd);
+          if (removeOpenAtEnd) item.removeAttribute("open");
+          item.classList.remove("is-collapsing");
+          item.dataset.animating = "0";
+        };
+        answer.addEventListener("transitionend", handleEnd);
+      };
+
+      if (isOpen) {
+        item.classList.add("is-collapsing");
+        answer.style.height = `${answer.scrollHeight}px`;
+        requestAnimationFrame(() => {
+          answer.style.height = "0px";
+          onDone(true);
+        });
+      } else {
+        item.setAttribute("open", "");
+        item.classList.remove("is-collapsing");
+        answer.style.height = "0px";
+        requestAnimationFrame(() => {
+          answer.style.height = `${answer.scrollHeight}px`;
+          onDone(false);
+        });
+      }
+    });
+  });
+
+  window.addEventListener("resize", () => {
+    items.forEach((item) => {
+      setAnswerHeight(item, item.hasAttribute("open"));
+    });
+  });
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
   await loadPartials();
   initAkaruMenu();
@@ -944,7 +1026,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   initBrandAppartCards();
   initCaseMasks();
   initTestimonialDrag();
+  initContactFaqAccordion();
   initHeroVideo();
   runPreloader();
+
+  if (typeof ScrollTrigger !== "undefined") {
+    window.addEventListener("load", () => {
+      requestAnimationFrame(() => ScrollTrigger.refresh());
+    });
+  }
 });
 
