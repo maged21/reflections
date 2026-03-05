@@ -938,6 +938,57 @@ function initTestimonialDrag() {
   }
 }
 
+function initAboutDotsField() {
+  const section = document.querySelector(".about-reference");
+  const dotsField = section ? section.querySelector(".about-dots-bg") : null;
+  if (!section || !dotsField) return;
+
+  if (window.matchMedia("(pointer: coarse)").matches) return;
+
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let rect = section.getBoundingClientRect();
+
+  const moveField = (x, y, immediate = false) => {
+    const clampedX = Math.max(0, Math.min(x, rect.width));
+    const clampedY = Math.max(0, Math.min(y, rect.height));
+
+    if (reduceMotion || typeof gsap === "undefined" || immediate) {
+      dotsField.style.setProperty("--mx", `${clampedX}px`);
+      dotsField.style.setProperty("--my", `${clampedY}px`);
+      return;
+    }
+
+    gsap.to(dotsField, {
+      "--mx": `${clampedX}px`,
+      "--my": `${clampedY}px`,
+      duration: 0.42,
+      ease: "power3.out",
+      overwrite: true
+    });
+  };
+
+  section.addEventListener("pointerenter", (event) => {
+    rect = section.getBoundingClientRect();
+    dotsField.classList.add("is-hovering");
+    moveField(event.clientX - rect.left, event.clientY - rect.top, true);
+  });
+
+  section.addEventListener("pointermove", (event) => {
+    rect = section.getBoundingClientRect();
+    moveField(event.clientX - rect.left, event.clientY - rect.top);
+  });
+
+  section.addEventListener("pointerleave", () => {
+    dotsField.classList.remove("is-hovering");
+    moveField(rect.width / 2, rect.height / 2);
+  });
+
+  window.addEventListener("resize", () => {
+    rect = section.getBoundingClientRect();
+    moveField(rect.width / 2, rect.height / 2, true);
+  });
+}
+
 function initContactFaqAccordion() {
   const items = Array.from(document.querySelectorAll(".faq-item"));
   if (!items.length) return;
@@ -1026,6 +1077,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   initBrandAppartCards();
   initCaseMasks();
   initTestimonialDrag();
+  initAboutDotsField();
   initContactFaqAccordion();
   initHeroVideo();
   runPreloader();

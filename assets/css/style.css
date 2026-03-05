@@ -411,6 +411,44 @@ a {
 .about-reference {
   background: #000;
   color: #eeece7;
+  position: relative;
+  overflow: hidden;
+}
+
+.about-reference .container-fluid {
+  position: relative;
+  z-index: 2;
+}
+
+.about-dots-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  --mx: 50%;
+  --my: 50%;
+}
+
+.about-dots-layer {
+  position: absolute;
+  inset: 0;
+  background-size: 18px 18px;
+}
+
+.about-dots-layer--base {
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.12) 1px, transparent 1.1px);
+}
+
+.about-dots-layer--active {
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.24) 2.2px, transparent 2.3px);
+  opacity: 0.32;
+  -webkit-mask-image: radial-gradient(220px 220px at var(--mx) var(--my), rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.92) 32%, transparent 78%);
+  mask-image: radial-gradient(220px 220px at var(--mx) var(--my), rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.92) 32%, transparent 78%);
+  transition: opacity 0.35s ease;
+}
+
+.about-dots-bg.is-hovering .about-dots-layer--active {
+  opacity: 0.9;
 }
 
 .about-exact-grid {
@@ -759,11 +797,11 @@ a {
   height: 100svh;
   overflow: hidden;
   perspective: 1000px;
-  background: #e3e3db;
+  /* background: #e3e3db; */
 }
 
 .ba-intro-wrap {
-  background: #e3e3db;
+  background: #030303;
   padding: 48px 0 12px;
 }
 
@@ -1130,7 +1168,7 @@ a {
 .lead-cta__eyebrow {
   margin: 0;
   max-width: 11ch;
-  color: #344b1f;
+  color: #e7e7e7;
   font-size: clamp(2rem, 4.8vw, 4.5rem);
   line-height: 0.98;
   letter-spacing: -0.03em;
@@ -2084,7 +2122,6 @@ html.lenis body {
 }
 
 .cg-case .hero h1 {
-  margin-top: 3em;
   text-align: center;
   text-transform: uppercase;
   font-size: 8.75vw;
