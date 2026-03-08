@@ -124,6 +124,7 @@ let appLenis;
 let splitCardsMM;
 let splitCardsResizeTimer;
 let splitCardsResizeBound = false;
+let scrollScenesStabilized = false;
 
 function setActiveNav() {
   const page = document.body.dataset.page;
@@ -384,6 +385,72 @@ function initLenis() {
   }
 }
 
+function queueScrollSceneRefresh() {
+  if (typeof ScrollTrigger === "undefined") return;
+  const delays = [0, 120, 380];
+  delays.forEach((delay) => {
+    window.setTimeout(() => {
+      ScrollTrigger.refresh();
+      ScrollTrigger.update();
+    }, delay);
+  });
+}
+
+function waitForImageReady(img) {
+  if (!img) return Promise.resolve();
+  if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+
+  return new Promise((resolve) => {
+    const done = () => {
+      img.removeEventListener("load", done);
+      img.removeEventListener("error", done);
+      resolve();
+    };
+    img.addEventListener("load", done, { once: true });
+    img.addEventListener("error", done, { once: true });
+  });
+}
+
+function waitForPinnedSectionAssets() {
+  const targets = Array.from(
+    document.querySelectorAll(".sc-card-front img, .ba-logo-img[data-random-ba-image]")
+  );
+  if (!targets.length) return Promise.resolve();
+
+  const waits = targets.map((el) => {
+    if (el.tagName === "IMG") {
+      return waitForImageReady(el);
+    }
+    const bg = getComputedStyle(el).backgroundImage;
+    if (!bg || bg === "none") return Promise.resolve();
+
+    const match = bg.match(/^url\((["']?)(.*?)\1\)$/);
+    if (!match || !match[2]) return Promise.resolve();
+
+    const probe = new Image();
+    probe.src = match[2];
+    return waitForImageReady(probe);
+  });
+
+  return Promise.allSettled(waits);
+}
+
+async function stabilizeScrollScenes() {
+  if (scrollScenesStabilized) return;
+  scrollScenesStabilized = true;
+
+  if (document.readyState !== "complete") {
+    await new Promise((resolve) => window.addEventListener("load", resolve, { once: true }));
+  }
+
+  await waitForPinnedSectionAssets();
+
+  initSplitCards();
+  initBrandAppartCards();
+
+  queueScrollSceneRefresh();
+}
+
 function runPreloader() {
   const preloader = document.getElementById("global-preloader");
   const counter = document.getElementById("preloader-counter");
@@ -445,7 +512,7 @@ function runPreloader() {
       preloader.querySelectorAll(".triangle").forEach((el) => el.remove());
       preloader.style.display = "none";
       if (typeof ScrollTrigger !== "undefined") {
-        requestAnimationFrame(() => ScrollTrigger.refresh());
+        queueScrollSceneRefresh();
       }
     }
   });
@@ -540,9 +607,6 @@ function initSplitCards() {
     .filter((trigger) => trigger.vars && trigger.vars.id === "split-cards-pin")
     .forEach((trigger) => trigger.kill());
 
-  let isGapAnimationCompleted = false;
-  let isFlipAnimationCompleted = false;
-
   splitCardsMM = gsap.matchMedia();
 
   splitCardsMM.add("(max-width: 999px)", () => {
@@ -553,104 +617,45 @@ function initSplitCards() {
   });
 
   splitCardsMM.add("(min-width: 1000px)", () => {
-    ScrollTrigger.create({
-      id: "split-cards-pin",
-      trigger: sticky,
-      start: "top top",
-      end: `+=${window.innerHeight * 4}px`,
-      scrub: 1,
-      pin: true,
-      pinSpacing: true,
-      onUpdate: (self) => {
-        const progress = self.progress;
+    const splitCards = splitWrap.querySelectorAll(".sc-card");
+    const firstCard = splitWrap.querySelector("#sc-card-1");
+    const secondCard = splitWrap.querySelector("#sc-card-2");
+    const thirdCard = splitWrap.querySelector("#sc-card-3");
 
-        if (progress >= 0.1 && progress <= 0.25) {
-          const headerProgress = gsap.utils.mapRange(0.1, 0.25, 0, 1, progress);
-          const yValue = gsap.utils.mapRange(0, 1, 40, 0, headerProgress);
-          const opacityValue = gsap.utils.mapRange(0, 1, 0, 1, headerProgress);
-          gsap.set(stickyHeader, { y: yValue, opacity: opacityValue });
-        } else if (progress < 0.1) {
-          gsap.set(stickyHeader, { y: 40, opacity: 0 });
-        } else if (progress > 0.25) {
-          gsap.set(stickyHeader, { y: 0, opacity: 1 });
-        }
+    gsap.killTweensOf([cardContainer, stickyHeader, splitCards, firstCard, thirdCard]);
+    gsap.set(stickyHeader, { y: 40, opacity: 0 });
+    gsap.set(cardContainer, { width: "75%", gap: "0px" });
+    gsap.set(splitCards, { rotationY: 0, clearProps: "y,rotationZ" });
+    gsap.set(firstCard, { borderRadius: "20px 0 0 20px" });
+    gsap.set(secondCard, { borderRadius: "0px" });
+    gsap.set(thirdCard, { borderRadius: "0 20px 20px 0" });
 
-        if (progress <= 0.25) {
-          const widthPercentage = gsap.utils.mapRange(0, 0.25, 75, 60, progress);
-          gsap.set(cardContainer, { width: `${widthPercentage}%` });
-        } else {
-          gsap.set(cardContainer, { width: "60%" });
-        }
-
-        if (progress >= 0.35 && !isGapAnimationCompleted) {
-          gsap.to(cardContainer, {
-            gap: "20px",
-            duration: 0.5,
-            ease: "power3.out"
-          });
-          gsap.to(["#sc-card-1", "#sc-card-2", "#sc-card-3"], {
-            borderRadius: "20px",
-            duration: 0.5,
-            ease: "power3.out"
-          });
-          isGapAnimationCompleted = true;
-        } else if (progress < 0.35 && isGapAnimationCompleted) {
-          gsap.to(cardContainer, {
-            gap: "0px",
-            duration: 0.5,
-            ease: "power3.out"
-          });
-          gsap.to("#sc-card-1", {
-            borderRadius: "20px 0 0 20px",
-            duration: 0.5,
-            ease: "power3.out"
-          });
-          gsap.to("#sc-card-2", {
-            borderRadius: "0px",
-            duration: 0.5,
-            ease: "power3.out"
-          });
-          gsap.to("#sc-card-3", {
-            borderRadius: "0 20px 20px 0",
-            duration: 0.5,
-            ease: "power3.out"
-          });
-          isGapAnimationCompleted = false;
-        }
-
-        if (progress >= 0.7 && !isFlipAnimationCompleted) {
-          gsap.to(".sc-card", {
-            rotationY: 180,
-            duration: 0.75,
-            ease: "power3.inOut",
-            stagger: 0.1
-          });
-          gsap.to(["#sc-card-1", "#sc-card-3"], {
-            y: 30,
-            rotationZ: (i) => [-15, 15][i],
-            duration: 0.75,
-            ease: "power3.inOut"
-          });
-          isFlipAnimationCompleted = true;
-        } else if (progress < 0.7 && isFlipAnimationCompleted) {
-          gsap.to(".sc-card", {
-            rotationY: 0,
-            duration: 0.75,
-            ease: "power3.inOut",
-            stagger: -0.1
-          });
-          gsap.to(["#sc-card-1", "#sc-card-3"], {
-            y: 0,
-            rotationZ: 0,
-            duration: 0.75,
-            ease: "power3.inOut"
-          });
-          isFlipAnimationCompleted = false;
-        }
+    const tl = gsap.timeline({
+      defaults: { ease: "none" },
+      scrollTrigger: {
+        id: "split-cards-pin",
+        trigger: sticky,
+        start: "top top",
+        end: `+=${window.innerHeight * 4}px`,
+        scrub: 1,
+        pin: true,
+        pinSpacing: true,
+        anticipatePin: 1,
+        invalidateOnRefresh: true
       }
     });
 
-    return () => {};
+    tl.to(cardContainer, { width: "60%", duration: 0.25 }, 0);
+    tl.to(stickyHeader, { y: 0, opacity: 1, duration: 0.15 }, 0.1);
+    tl.to(cardContainer, { gap: "20px", duration: 0.08, ease: "power3.out" }, 0.35);
+    tl.to(splitCards, { borderRadius: "20px", duration: 0.08, ease: "power3.out" }, 0.35);
+    tl.to(splitCards, { rotationY: 180, duration: 0.12, ease: "power3.inOut", stagger: 0.02 }, 0.7);
+    tl.to(firstCard, { y: 30, rotationZ: -15, duration: 0.12, ease: "power3.inOut" }, 0.7);
+    tl.to(thirdCard, { y: 30, rotationZ: 15, duration: 0.12, ease: "power3.inOut" }, 0.7);
+
+    return () => {
+      tl.kill();
+    };
   });
 
   if (!splitCardsResizeBound) {
@@ -700,6 +705,8 @@ function initBrandAppartCards() {
     pin: true,
     pinSpacing: true,
     scrub: 1,
+    anticipatePin: 1,
+    invalidateOnRefresh: true,
     onUpdate: (self) => {
       const progress = self.progress;
       const activeIndex = Math.min(Math.floor(progress / segmentSize), Math.max(totalCards - 2, 0));
@@ -1092,18 +1099,26 @@ document.addEventListener("DOMContentLoaded", async () => {
   initAkaruMenu();
   applyRandomImages();
   initLenis();
-  initSplitCards();
-  initBrandAppartCards();
   initCaseMasks();
   initTestimonialDrag();
   initInteractiveDotFields();
   initContactFaqAccordion();
   initHeroVideo();
   runPreloader();
+  stabilizeScrollScenes();
 
   if (typeof ScrollTrigger !== "undefined") {
     window.addEventListener("load", () => {
-      requestAnimationFrame(() => ScrollTrigger.refresh());
+      queueScrollSceneRefresh();
+    });
+
+    window.addEventListener("pageshow", () => {
+      scrollScenesStabilized = false;
+      stabilizeScrollScenes();
+    });
+
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) queueScrollSceneRefresh();
     });
   }
 });
