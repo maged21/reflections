@@ -124,6 +124,8 @@ let appLenis;
 let splitCardsMM;
 let splitCardsResizeTimer;
 let splitCardsResizeBound = false;
+let baCardsResizeTimer;
+let baCardsResizeBound = false;
 let scrollScenesStabilized = false;
 
 function setActiveNav() {
@@ -387,7 +389,7 @@ function initLenis() {
 
 function queueScrollSceneRefresh() {
   if (typeof ScrollTrigger === "undefined") return;
-  const delays = [0, 120, 380];
+  const delays = [0, 120, 380, 650];
   delays.forEach((delay) => {
     window.setTimeout(() => {
       ScrollTrigger.refresh();
@@ -636,7 +638,7 @@ function initSplitCards() {
         id: "split-cards-pin",
         trigger: sticky,
         start: "top top",
-        end: `+=${window.innerHeight * 4}px`,
+        end: () => `+=${window.innerHeight * 4}px`,
         scrub: 1,
         pin: true,
         pinSpacing: true,
@@ -701,12 +703,22 @@ function initBrandAppartCards() {
     id: "ba-sticky-cards-pin",
     trigger: section,
     start: "top top",
-    end: `+=${window.innerHeight * (transitionCount * 0.62)}px`,
+    end: () => `+=${window.innerHeight * (transitionCount * 0.62)}px`,
     pin: true,
     pinSpacing: true,
     scrub: 1,
     anticipatePin: 1,
     invalidateOnRefresh: true,
+    onRefresh: () => {
+      cards.forEach((card, i) => {
+        gsap.set(card, {
+          xPercent: -50,
+          yPercent: -50 + i * cardYOffset,
+          scale: 1 - i * cardScaleStep,
+          rotationX: 0
+        });
+      });
+    },
     onUpdate: (self) => {
       const progress = self.progress;
       const activeIndex = Math.min(Math.floor(progress / segmentSize), Math.max(totalCards - 2, 0));
@@ -738,6 +750,16 @@ function initBrandAppartCards() {
       });
     }
   });
+
+  if (!baCardsResizeBound) {
+    window.addEventListener("resize", () => {
+      clearTimeout(baCardsResizeTimer);
+      baCardsResizeTimer = setTimeout(() => {
+        initBrandAppartCards();
+      }, 250);
+    });
+    baCardsResizeBound = true;
+  }
 
   ScrollTrigger.refresh();
 }
@@ -807,7 +829,7 @@ function initCaseMasks() {
         tl.to(
           targets.map((cls) => img.querySelector(cls)),
           {
-            clipPath: (k, el) => finalClipPaths[Array.from(masks).indexOf(el)],
+            clipPath: (_, el) => finalClipPaths[Array.from(masks).indexOf(el)],
             duration: 0.5,
             ease: "power2.out",
             stagger: 0.1
@@ -1112,9 +1134,16 @@ document.addEventListener("DOMContentLoaded", async () => {
       queueScrollSceneRefresh();
     });
 
-    window.addEventListener("pageshow", () => {
-      scrollScenesStabilized = false;
-      stabilizeScrollScenes();
+    window.addEventListener("pageshow", (e) => {
+      if (appLenis) {
+        appLenis.scrollTo(window.scrollY, { immediate: true, force: true });
+      }
+      if (e.persisted) {
+        scrollScenesStabilized = false;
+        stabilizeScrollScenes();
+      } else {
+        queueScrollSceneRefresh();
+      }
     });
 
     document.addEventListener("visibilitychange", () => {
