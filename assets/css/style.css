@@ -2363,7 +2363,7 @@ html.lenis body {
   background-size: cover;
 }
 
-@media (max-width: 1366px) {
+@media (max-width: 1366px) and (min-width: 900px) {
   .site-header .col {
     padding: 6em 4em 2em;
   }
@@ -2392,6 +2392,12 @@ html.lenis body {
   .about-principles-intro h2 {
     font-size: clamp(2.4rem, 4vw, 5.2rem);
   }
+  .ba-sticky-cards .ba-logos {
+    margin-top: -1rem;
+  }
+  .ba-sticky-cards .ba-logo{
+    min-height: clamp(100px, 8vw, 200px);
+  }
 }
 
 @media (max-width: 900px) {
@@ -2418,6 +2424,12 @@ html.lenis body {
     font-size: clamp(3.3rem, 18vw, 6rem);
     height: auto;
   }
+  /* .ba-sticky-cards .ba-logos {
+    margin-top: auto;
+  }
+  .ba-sticky-cards .ba-logo{
+    min-height: clamp(100px, 8vw, 200px);
+  } */
 }
 
 @media (max-width: 991px) {
