@@ -124,8 +124,10 @@ let appLenis;
 let splitCardsMM;
 let splitCardsResizeTimer;
 let splitCardsResizeBound = false;
+let splitCardsLastWidth = 0;
 let baCardsResizeTimer;
 let baCardsResizeBound = false;
+let baCardsLastWidth = 0;
 let scrollScenesStabilized = false;
 
 function setActiveNav() {
@@ -638,7 +640,7 @@ function initSplitCards() {
         id: "split-cards-pin",
         trigger: sticky,
         start: "top top",
-        end: () => `+=${window.innerHeight * 4}px`,
+        end: () => `+=${sticky.clientHeight * 4}px`,
         scrub: 1,
         pin: true,
         pinSpacing: true,
@@ -661,7 +663,11 @@ function initSplitCards() {
   });
 
   if (!splitCardsResizeBound) {
+    splitCardsLastWidth = window.innerWidth;
     window.addEventListener("resize", () => {
+      const w = window.innerWidth;
+      if (w === splitCardsLastWidth) return;
+      splitCardsLastWidth = w;
       clearTimeout(splitCardsResizeTimer);
       splitCardsResizeTimer = setTimeout(() => {
         initSplitCards();
@@ -703,7 +709,7 @@ function initBrandAppartCards() {
     id: "ba-sticky-cards-pin",
     trigger: section,
     start: "top top",
-    end: () => `+=${window.innerHeight * (transitionCount * 0.62)}px`,
+    end: () => `+=${section.clientHeight * (transitionCount * 0.62)}px`,
     pin: true,
     pinSpacing: true,
     scrub: 1,
@@ -752,7 +758,11 @@ function initBrandAppartCards() {
   });
 
   if (!baCardsResizeBound) {
+    baCardsLastWidth = window.innerWidth;
     window.addEventListener("resize", () => {
+      const w = window.innerWidth;
+      if (w === baCardsLastWidth) return;
+      baCardsLastWidth = w;
       clearTimeout(baCardsResizeTimer);
       baCardsResizeTimer = setTimeout(() => {
         initBrandAppartCards();

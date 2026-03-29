@@ -121,7 +121,6 @@ a {
   backdrop-filter: blur(14px) saturate(120%);
   -webkit-backdrop-filter: blur(14px) saturate(120%);
   border-radius: 8em;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
   transition: width 0.5s cubic-bezier(0.075, 0.82, 0.165, 1);
   transform-origin: right;
   cursor: pointer;
@@ -288,7 +287,7 @@ a {
 .site-header .video-wrapper {
   width: 100%;
   aspect-ratio: 16 / 9;
-  background-color: #1d1d1d;
+  /* background-color: #1d1d1d; */
   clip-path: polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%);
   overflow: hidden;
   /* padding: 2em; */
@@ -845,7 +844,7 @@ a {
   top: 43%;
   left: 50%;
   width: min(96%, 1320px);
-  height: min(86vh, 760px);
+  height: min(86svh, 760px);
   border-radius: 1rem;
   color: #f4f4f4;
   transform-origin: center bottom;
@@ -1804,7 +1803,8 @@ a {
   position: relative;
   border: 1px solid rgba(255, 255, 255, 0.12);
   padding: clamp(1.2rem, 2.2vw, 2rem);
-  background: rgba(10, 10, 10, 0.75);
+  background: linear-gradient(140deg, rgba(15, 15, 15, 0.14), rgba(8, 7, 7, 0.04));
+  backdrop-filter: blur(14px);
 }
 
 .contact-form-frame::before,
@@ -2362,6 +2362,37 @@ html.lenis body {
   background-size: cover;
 }
 
+@media (max-width: 1366px) {
+  .site-header .col {
+    padding: 6em 4em 2em;
+  }
+  .site-header .header h1 {
+    font-size: 6rem;
+  }
+  .hero-title {
+    font-size: 3rem;
+  }
+  .clients-loop-title {
+    font-size: clamp(2rem, 5.8vw, 3rem)
+  }
+  .sc-wrap .sc-header .section-intro-title {
+    font-size: clamp(2.4rem, 5vw, 2.6rem);
+  }
+   .ba-intro-wrap .section-intro-title {
+    font-size: clamp(3.4rem, 2vw, 6.6rem);
+    text-align: center;
+   }
+  .ba-sticky-cards .ba-card h2 {
+    font-size: clamp(1.25rem, 2.5vw, 1.95rem);
+  }
+  .about-intro-copy h2 {
+    font-size: clamp(2.4rem, 4.4vw, 5rem);
+  }
+  .about-principles-intro h2 {
+    font-size: clamp(2.4rem, 4vw, 5.2rem);
+  }
+}
+
 @media (max-width: 900px) {
   .site-header .col-1 {
     flex: 2;
@@ -2481,7 +2512,7 @@ html.lenis body {
 
   .ba-sticky-cards .ba-card {
     width: calc(100% - 2.5rem);
-    height: min(84vh, 700px);
+    height: min(84svh, 700px);
   }
 
   .ba-sticky-cards .ba-frame {
@@ -2759,8 +2790,20 @@ html.lenis body {
 }
 
 @media (max-width: 576px) {
+  .site-header .header h1 {
+    font-size: 1.5rem;
+  }
   .about-intro-hero {
     padding-bottom: 34px;
+  }
+  .site-header .col {
+    padding: 10em 2em 2em;
+  }
+  .site-header .col-1 {
+    flex: auto;
+  }
+  .site-header .video-wrapper video {
+    border-radius: 15px;
   }
 
   .about-intro-media {
@@ -2916,13 +2959,13 @@ html.lenis body {
 
   .ba-sticky-cards .ba-card {
     width: calc(100% - 1.2rem);
-    height: min(82vh, 640px);
+    height: min(82svh, 640px);
     border-radius: 0.85rem;
   }
 
   .ba-sticky-cards .ba-frame {
     gap: 0.55rem;
-    padding: 0.72rem;
+    padding: clamp(1.4rem, 2.4vw, 3rem);
   }
 
   .ba-sticky-cards .ba-head span {
@@ -2930,9 +2973,9 @@ html.lenis body {
   }
 
   .ba-sticky-cards .ba-card h2 {
-    font-size: clamp(1.55rem, 10.5vw, 2.6rem);
+    font-size: clamp(1.55rem, 10.5vw, 1.6rem);
     line-height: 0.94;
-    max-width: 11ch;
+    max-width: 31ch;
   }
 
   .ba-sticky-cards .ba-body {
