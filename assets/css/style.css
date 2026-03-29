@@ -90,8 +90,9 @@ a {
 .site-header .akaru-logo,
 .site-header .menu-logo {
   position: fixed;
-  top: 2em;
+  top: calc(2em + 30px);
   left: 2em;
+  transform: translateY(-50%);
   pointer-events: auto;
 }
 
